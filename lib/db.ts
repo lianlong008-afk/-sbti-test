@@ -35,10 +35,11 @@ async function upstashCommand(cmd: string[]): Promise<any> {
   const token = getUpstashToken();
   if (!url || !token) return null;
 
+  const [command, ...args] = cmd;
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(cmd),
+    body: JSON.stringify({ cmd: command, args }),
   });
   return res.json();
 }
@@ -96,9 +97,10 @@ export async function getResults(options?: { type?: string; limit?: number; offs
   const end = start + (options?.limit || 100) - 1;
 
   const raw = await upstashCommand(['LRANGE', 'sbti_results', String(start), String(end)]);
-  if (!raw || !Array.isArray(raw)) return [];
+  const items = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.result)) ? raw.result : [];
+  if (!items || items.length === 0) return [];
 
-  let results: ResultRecord[] = raw.map((item: string) => JSON.parse(item));
+  let results: ResultRecord[] = items.map((item: string) => JSON.parse(item));
 
   if (options?.type) {
     results = results.filter(r => r.final_type === options.type);
@@ -114,7 +116,9 @@ export async function getResultCount(): Promise<number> {
   if (!url || !token) return inMemoryResults.length;
 
   const raw = await upstashCommand(['LLEN', 'sbti_results']);
-  return typeof raw === 'number' ? raw : 0;
+  if (typeof raw === 'number') return raw;
+  if (raw && typeof raw.result === 'number') return raw.result;
+  return 0;
 }
 
 export async function getAllTypes(): Promise<string[]> {
