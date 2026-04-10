@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getResults, getResultCount, getAllTypes } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { slug?: string } }
+) {
   try {
-    const { searchParams } = new URL(req.url);
-    const type = searchParams.get('type') || undefined;
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
-    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
+    const url = _req.nextUrl;
+    const type = url.searchParams.get('type') || undefined;
+    const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : undefined;
+    const offset = url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : undefined;
 
     const results = await getResults({ type, limit, offset });
     const total = await getResultCount();
