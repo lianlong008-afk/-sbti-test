@@ -76,6 +76,10 @@ export async function insertResult(data: {
   });
 
   const pushResult = await upstashCommand(['LPUSH', 'sbti_results', record]);
+  if (pushResult && pushResult.error) {
+    console.error('Upstash LPUSH error:', pushResult.error);
+    throw new Error(`Upstash LPUSH failed: ${JSON.stringify(pushResult)}`);
+  }
   await upstashCommand(['LTRIM', 'sbti_results', '0', '9999']);
 }
 

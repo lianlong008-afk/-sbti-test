@@ -29,6 +29,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('Submit error:', err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: String(err), debug: { upstashUrl: !!process.env.UPSTASH_REDIS_REST_URL } }, { status: 500 });
   }
 }
