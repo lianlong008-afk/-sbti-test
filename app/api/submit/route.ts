@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
       ip,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, debug: { url: process.env.UPSTASH_REDIS_REST_URL ? 'set' : 'missing' } });
   } catch (err) {
     console.error('Submit error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

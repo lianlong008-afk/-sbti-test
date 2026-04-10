@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
     const total = await getResultCount();
     const types = await getAllTypes();
 
-    return NextResponse.json({ results, total, types });
+    return NextResponse.json({ results, total, types, debug: { upstashUrl: !!process.env.UPSTASH_REDIS_REST_URL } });
   } catch (err) {
     console.error('Results error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
