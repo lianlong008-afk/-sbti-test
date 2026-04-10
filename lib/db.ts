@@ -28,11 +28,10 @@ async function upstashCommand(cmd: string[]): Promise<any> {
   const token = getUpstashToken();
   if (!url || !token) return null;
 
-  const [command, ...args] = cmd;
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ Command: command, Args: args }),
+    body: JSON.stringify(cmd),
   });
   return res.json();
 }
@@ -93,7 +92,7 @@ export async function getResults(options?: { type?: string; limit?: number; offs
   const end = start + (options?.limit || 100) - 1;
 
   const raw = await upstashCommand(['LRANGE', 'sbti_results', String(start), String(end)]);
-  const items: string[] = Array.isArray(raw) ? raw : (raw && Array.isArray((raw as any).result)) ? (raw as any).result : [];
+  const items: string[] = (raw && Array.isArray((raw as any).result)) ? (raw as any).result : [];
   if (!items || items.length === 0) return [];
 
   const results: ResultRecord[] = items.map((item: string) => JSON.parse(item));
