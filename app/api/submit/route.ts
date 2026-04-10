@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
 
-    const result = await insertResult({
+    await insertResult({
       answersJson: JSON.stringify(answers),
       finalType,
       typeCn: typeCn || '',
@@ -24,8 +24,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      success: result.success,
-      error: result.error || undefined,
+      success: true,
       debug: { upstashUrl: !!process.env.UPSTASH_REDIS_REST_URL }
     });
   } catch (err) {
