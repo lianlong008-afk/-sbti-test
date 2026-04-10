@@ -1,0 +1,4 @@
+node_modules/
+.next/
+sbti_results.json
+.env.local
