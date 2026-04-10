@@ -31,7 +31,7 @@ async function upstashCommand(cmd: string[]): Promise<any> {
   const [command, ...args] = cmd;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { Authorization: token, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ Command: command, Args: args }),
   });
   return res.json();
