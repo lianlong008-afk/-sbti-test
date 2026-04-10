@@ -28,10 +28,11 @@ async function upstashCommand(cmd: string[]): Promise<any> {
   const token = getUpstashToken();
   if (!url || !token) return null;
 
+  const [command, ...args] = cmd;
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: token, 'Content-Type': 'application/json' },
-    body: JSON.stringify(cmd),
+    body: JSON.stringify({ Command: command, Args: args }),
   });
   return res.json();
 }
