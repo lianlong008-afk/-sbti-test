@@ -2,9 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { questions, specialQuestions, dimensionMeta } from '@/lib/data';
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'sbti-admin';
+
+// Build a lookup map: questionId -> question object
+type Q = { id: string; dim?: string; text: string; options: { label: string; value: number }[] };
+const questionMap: Record<string, Q> = {};
+[...questions, ...specialQuestions].forEach(q => { questionMap[q.id] = q as Q; });
+
+function getQuestionInfo(qId: string, value: number) {
+  const q = questionMap[qId];
+  if (!q) return { text: '(未知题目)', selectedLabel: `选项${value}`, dim: '' };
+  const opt = q.options.find(o => o.value === value);
+  return {
+    text: q.text.length > 60 ? q.text.substring(0, 60) + '…' : q.text,
+    selectedLabel: opt ? opt.label : `选项${value}`,
+    dim: q.dim || '',
+  };
+}
 
 interface Result {
   id: number;
@@ -18,7 +34,6 @@ interface Result {
 }
 
 export default function AdminPage() {
-  const router = useRouter();
   const [password, setPassword] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
   const [authError, setAuthError] = useState(false);
@@ -163,12 +178,22 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <p style={{ fontWeight: 700, fontSize: '13px', color: 'var(--muted)', marginBottom: '8px' }}>所有答案</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '6px' }}>
-                          {Object.entries(answers).map(([qId, val]: [string, any]) => (
-                            <div key={qId} style={{ fontSize: '12px', color: 'var(--text)' }}>
-                              <span style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>{qId}</span>: <span style={{ fontWeight: 700 }}>{val}</span>
-                            </div>
-                          ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {Object.entries(answers).map(([qId, val]: [string, any]) => {
+                            const { text, selectedLabel, dim } = getQuestionInfo(qId, Number(val));
+                            return (
+                              <div key={qId} style={{ fontSize: '13px', color: 'var(--text)', background: 'var(--soft)', padding: '10px 14px', borderRadius: '10px', lineHeight: '1.5' }}>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                                  <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-strong)', background: 'white', padding: '2px 8px', borderRadius: '6px', fontSize: '12px', whiteSpace: 'nowrap' }}>{qId}{dim ? ` (${dimensionMeta[dim]?.name || dim})` : ''}</span>
+                                  <span style={{ color: 'var(--muted)', flex: 1 }}>{text}</span>
+                                </div>
+                                <div style={{ marginTop: '4px', paddingLeft: '2px' }}>
+                                  → <span style={{ fontWeight: 800, color: 'var(--accent-strong)' }}>{selectedLabel}</span>
+                                  <span style={{ color: 'var(--muted)', marginLeft: '8px', fontSize: '12px' }}>(值: {val})</span>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
